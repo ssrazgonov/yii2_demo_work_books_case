@@ -3,15 +3,17 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
-class Subscription extends \yii\db\ActiveRecord
+class Subscription extends ActiveRecord
 {
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'subscription';
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['author_id', 'phone'], 'required'],
@@ -21,7 +23,7 @@ class Subscription extends \yii\db\ActiveRecord
         ];
     }
 
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -36,11 +38,11 @@ class Subscription extends \yii\db\ActiveRecord
         return $this->hasOne(Author::class, ['id' => 'author_id']);
     }
 
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             [
-                'class' => \yii\behaviors\TimestampBehavior::class,
+                'class' => TimestampBehavior::class,
                 'updatedAtAttribute' => false,
             ],
         ];

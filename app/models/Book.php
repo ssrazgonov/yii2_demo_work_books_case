@@ -3,15 +3,17 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
-class Book extends \yii\db\ActiveRecord
+class Book extends ActiveRecord
 {
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'book';
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['title', 'year'], 'required'],
@@ -24,7 +26,7 @@ class Book extends \yii\db\ActiveRecord
         ];
     }
 
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -48,10 +50,10 @@ class Book extends \yii\db\ActiveRecord
         return $this->hasMany(Author::class, ['id' => 'author_id'])->viaTable('book_author', ['book_id' => 'id']);
     }
 
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
-            \yii\behaviors\TimestampBehavior::class,
+            TimestampBehavior::class,
         ];
     }
 
