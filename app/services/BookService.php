@@ -3,6 +3,7 @@
 namespace app\services;
 
 use app\dto\BookDto;
+use app\events\BookCreatedEvent;
 use app\models\Book;
 use app\models\BookAuthor;
 use app\models\Author;
@@ -10,8 +11,10 @@ use Yii;
 use yii\data\ActiveDataProvider;
 use yii\helpers\ArrayHelper;
 
-class BookService
+class BookService extends \yii\base\Component
 {
+    const EVENT_BOOK_CREATED = 'bookCreated';
+
     public function getAllBooks(): ActiveDataProvider
     {
         return new ActiveDataProvider([
@@ -44,6 +47,9 @@ class BookService
             }
             $this->updateBookAuthors($book->id, $dto->authorIds);
             $transaction->commit();
+
+            $event = new BookCreatedEvent($book, $dto->authorIds);
+            $this->trigger(self::EVENT_BOOK_CREATED, $event);
         } catch (\Exception $e) {
             $transaction->rollBack();
             throw $e;

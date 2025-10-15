@@ -10,6 +10,7 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\Subscription;
+use app\services\ReportService;
 
 class SiteController extends Controller
 {
@@ -55,25 +56,6 @@ class SiteController extends Controller
         ];
     }
 
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
-    public function actionIndex()
-    {
-        $authors = \app\models\Author::find()->with('books')->all();
-
-        return $this->render('index', [
-            'authors' => $authors,
-        ]);
-    }
-
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest) {
@@ -91,11 +73,6 @@ class SiteController extends Controller
         ]);
     }
 
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
     public function actionLogout()
     {
         Yii::$app->user->logout();
@@ -103,46 +80,44 @@ class SiteController extends Controller
         return $this->goHome();
     }
 
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
+    public function actionIndex()
     {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
+        $authors = \app\models\Author::find()->with('books')->all();
 
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
+        return $this->render('index', [
+            'authors' => $authors,
         ]);
     }
 
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
+    public function actionReport()
     {
-        return $this->render('about');
+        $year = Yii::$app->request->get('year', date('Y'));
+        $reportService = new ReportService();
+
+        $topAuthors = $reportService->getTopAuthorsByYear($year);
+
+        return $this->render('report', [
+            'topAuthors' => $topAuthors,
+            'year' => $year,
+        ]);
     }
 
-    /**
-     * Subscribe to author action.
-     *
-     * @return Response
-     */
     public function actionSubscribe()
     {
         $authorId = Yii::$app->request->post('author_id');
-        $phone = Yii::$app->request->post('phone');
+        $phone = Yii::$app->request->post('Subscription')['phone'] ?? null;
 
         if (!$authorId || !$phone) {
             Yii::$app->session->setFlash('error', 'Не указан автор или телефон.');
+            return $this->redirect(['index']);
+        }
+
+        $existingSubscription = Subscription::find()
+            ->where(['author_id' => $authorId, 'phone' => $phone])
+            ->exists();
+
+        if ($existingSubscription) {
+            Yii::$app->session->setFlash('error', 'Вы уже подписаны на уведомления этого автора.');
             return $this->redirect(['index']);
         }
 
@@ -154,7 +129,7 @@ class SiteController extends Controller
         if ($subscription->save()) {
             Yii::$app->session->setFlash('success', 'Вы успешно подписались на уведомления об новых книгах автора.');
         } else {
-            Yii::$app->session->setFlash('error', 'Ошибка при подписке. Возможно, вы уже подписаны.');
+            Yii::$app->session->setFlash('error', 'Ошибка при подписке.');
         }
 
         return $this->redirect(['index']);
