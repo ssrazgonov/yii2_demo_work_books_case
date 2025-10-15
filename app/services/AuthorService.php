@@ -27,10 +27,13 @@ class AuthorService
         $author = new Author();
         $author->name = trim($dto->name);
 
-        throw_unless($author->validate(), \InvalidArgumentException::class,
-            'Некорректные данные автора: ' . implode(', ', $author->getErrorSummary(true)));
+        if (!$author->validate()) {
+            throw new \InvalidArgumentException('Некорректные данные автора: ' . implode(', ', $author->getErrorSummary(true)));
+        }
 
-        throw_unless($author->save(), \RuntimeException::class, 'Не удалось сохранить автора');
+        if (!$author->save()) {
+            throw new \RuntimeException('Не удалось сохранить автора');
+        }
 
         return $author;
     }
@@ -41,10 +44,13 @@ class AuthorService
 
         $author->name = trim($dto->name);
 
-        throw_unless($author->validate(), \InvalidArgumentException::class,
-            'Некорректные данные автора: ' . implode(', ', $author->getErrorSummary(true)));
+        if (!$author->validate()) {
+            throw new \InvalidArgumentException('Некорректные данные автора: ' . implode(', ', $author->getErrorSummary(true)));
+        }
 
-        throw_unless($author->save(), \RuntimeException::class, 'Не удалось обновить автора');
+        if (!$author->save()) {
+            throw new \RuntimeException('Не удалось обновить автора');
+        }
 
         return $author;
     }

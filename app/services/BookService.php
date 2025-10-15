@@ -8,7 +8,6 @@ use app\models\BookAuthor;
 use app\models\Author;
 use Yii;
 use yii\data\ActiveDataProvider;
-use yii\db\Connection as DB;
 use yii\helpers\ArrayHelper;
 
 class BookService
@@ -34,13 +33,21 @@ class BookService
         $book->isbn = $dto->isbn ? trim($dto->isbn) : null;
         $book->cover_image = $dto->cover_image ? trim($dto->cover_image) : null;
 
-        throw_unless($book->validate(), \InvalidArgumentException::class,
-            'Некорректные данные книги: ' . implode(', ', $book->getErrorSummary(true)));
+        if (!$book->validate()) {
+            throw new \InvalidArgumentException('Некорректные данные книги: ' . implode(', ', $book->getErrorSummary(true)));
+        }
 
-        DB::transaction(function () use ($book, $dto) {
-            throw_unless($book->save(), \RuntimeException::class, 'Не удалось сохранить книгу');
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            if (!$book->save()) {
+                throw new \RuntimeException('Не удалось сохранить книгу');
+            }
             $this->updateBookAuthors($book->id, $dto->authorIds);
-        });
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
 
         return $book;
     }
@@ -55,13 +62,21 @@ class BookService
         $book->isbn = $dto->isbn ? trim($dto->isbn) : null;
         $book->cover_image = $dto->cover_image ? trim($dto->cover_image) : null;
 
-        throw_unless($book->validate(), \InvalidArgumentException::class,
-            'Некорректные данные книги: ' . implode(', ', $book->getErrorSummary(true)));
+        if (!$book->validate()) {
+            throw new \InvalidArgumentException('Некорректные данные книги: ' . implode(', ', $book->getErrorSummary(true)));
+        }
 
-        DB::transaction(function () use ($book, $dto) {
-            throw_unless($book->save(), \RuntimeException::class, 'Не удалось обновить книгу');
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            if (!$book->save()) {
+                throw new \RuntimeException('Не удалось обновить книгу');
+            }
             $this->updateBookAuthors($book->id, $dto->authorIds);
-        });
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
 
         return $book;
     }

@@ -19,7 +19,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'cover_image')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'authorIds')->checkboxList($authors, ['value' => $selectedAuthors]) ?>
+    <div class="form-group">
+        <label>Авторы</label>
+        <?= Html::checkboxList('Book[authorIds]', $selectedAuthors, $authors) ?>
+    </div>
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить', ['class' => 'btn btn-success']) ?>

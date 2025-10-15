@@ -39,22 +39,22 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav'],
         'items' => [
-            ['label' => 'Главная', 'url' => ['/site/index']],
-            ['label' => 'О нас', 'url' => ['/site/about']],
-            ['label' => 'Контакты', 'url' => ['/site/contact']],
             Yii::$app->user->isGuest
                 ? ['label' => 'Войти', 'url' => ['/site/login']]
                 : [
-                    ['label' => 'Авторы', 'url' => ['/author/index']],
-                    ['label' => 'Книги', 'url' => ['/book/index']],
-                    '<li class="nav-item">'
-                        . Html::beginForm(['/site/logout'])
-                        . Html::submitButton(
-                            'Выйти (' . Yii::$app->user->identity->username . ')',
-                            ['class' => 'nav-link btn btn-link logout']
-                        )
-                        . Html::endForm()
-                        . '</li>'
+                    'label' => 'Админ',
+                    'items' => [
+                        ['label' => 'Авторы', 'url' => ['/author/index']],
+                        ['label' => 'Книги', 'url' => ['/book/index']],
+                        '<li class="nav-item">'
+                            . Html::beginForm(['/site/logout'])
+                            . Html::submitButton(
+                                'Выйти (' . Yii::$app->user->identity->username . ')',
+                                ['class' => 'nav-link btn btn-link logout']
+                            )
+                            . Html::endForm()
+                            . '</li>'
+                    ]
                 ]
         ]
     ]);
