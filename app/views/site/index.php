@@ -1,53 +1,54 @@
 <?php
 
 /** @var yii\web\View $this */
+/** @var \app\models\Author[] $authors */
 
-$this->title = 'My Yii Application';
+use yii\widgets\ActiveForm;
+use yii\helpers\Html;
+
+$this->title = 'Каталог книг';
 ?>
+
 <div class="site-index">
+    <h1>Каталог книг</h1>
 
-    <div class="jumbotron text-center bg-transparent mt-5 mb-5">
-        <h1 class="display-4">Congratulations!</h1>
+    <?php foreach ($authors as $author): ?>
+        <div style="margin-bottom: 30px; border: 1px solid #ccc; padding: 10px;">
+            <h2><?php echo Html::encode($author->name); ?></h2>
 
-        <p class="lead">You have successfully created your Yii-powered application.</p>
+            <h3>Книги:</h3>
+            <ul>
+                <?php foreach ($author->books as $book): ?>
+                    <li>
+                        <strong><?php echo Html::encode($book->title); ?></strong>
+                        (<?php echo Html::encode($book->year); ?>)
+                        <?php if ($book->isbn): ?>
+                            - ISBN: <?php echo Html::encode($book->isbn); ?>
+                        <?php endif; ?>
+                        <?php if ($book->description): ?>
+                            <br><em><?php echo Html::encode($book->description); ?></em>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
 
-        <p><a class="btn btn-lg btn-success" href="https://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
+            <h4>Подписаться на новые книги автора:</h4>
+            <?php $form = ActiveForm::begin([
+                'action' => ['site/subscribe'],
+                'method' => 'post',
+            ]); ?>
 
-    <div class="body-content">
+            <?php echo $form->field($model ?? new \app\models\Subscription(), 'phone')
+                ->textInput(['placeholder' => '+7XXXXXXXXXX'])
+                ->label('Номер телефона'); ?>
 
-        <div class="row">
-            <div class="col-lg-4 mb-3">
-                <h2>Heading</h2>
+            <?php echo Html::hiddenInput('author_id', $author->id); ?>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="https://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
+            <div class="form-group">
+                <?php echo Html::submitButton('Подписаться', ['class' => 'btn btn-primary']); ?>
             </div>
-            <div class="col-lg-4 mb-3">
-                <h2>Heading</h2>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="https://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="https://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
+            <?php ActiveForm::end(); ?>
         </div>
-
-    </div>
+    <?php endforeach; ?>
 </div>

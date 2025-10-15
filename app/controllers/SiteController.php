@@ -9,6 +9,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\Subscription;
 
 class SiteController extends Controller
 {
@@ -61,7 +62,11 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $authors = \app\models\Author::find()->with('books')->all();
+
+        return $this->render('index', [
+            'authors' => $authors,
+        ]);
     }
 
     /**
@@ -124,5 +129,34 @@ class SiteController extends Controller
     public function actionAbout()
     {
         return $this->render('about');
+    }
+
+    /**
+     * Subscribe to author action.
+     *
+     * @return Response
+     */
+    public function actionSubscribe()
+    {
+        $authorId = Yii::$app->request->post('author_id');
+        $phone = Yii::$app->request->post('phone');
+
+        if (!$authorId || !$phone) {
+            Yii::$app->session->setFlash('error', 'Не указан автор или телефон.');
+            return $this->redirect(['index']);
+        }
+
+        $subscription = new Subscription();
+        $subscription->author_id = $authorId;
+        $subscription->phone = $phone;
+        $subscription->created_at = time();
+
+        if ($subscription->save()) {
+            Yii::$app->session->setFlash('success', 'Вы успешно подписались на уведомления об новых книгах автора.');
+        } else {
+            Yii::$app->session->setFlash('error', 'Ошибка при подписке. Возможно, вы уже подписаны.');
+        }
+
+        return $this->redirect(['index']);
     }
 }
