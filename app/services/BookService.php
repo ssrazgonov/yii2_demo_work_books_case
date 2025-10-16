@@ -10,6 +10,7 @@ use app\models\Author;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\helpers\ArrayHelper;
+use yii\web\UploadedFile;
 
 class BookService extends \yii\base\Component
 {
@@ -36,6 +37,10 @@ class BookService extends \yii\base\Component
         $book->isbn = $dto->isbn ? trim($dto->isbn) : null;
         $book->cover_image = $dto->cover_image ? trim($dto->cover_image) : null;
 
+        if ($dto->coverImageFile) {
+            $book->cover_image = $this->uploadCoverImage($dto->coverImageFile);
+        }
+
         if (!$book->validate()) {
             throw new \InvalidArgumentException('Некорректные данные книги: ' . implode(', ', $book->getErrorSummary(true)));
         }
@@ -58,6 +63,24 @@ class BookService extends \yii\base\Component
         return $book;
     }
 
+    public function uploadCoverImage(UploadedFile $file): string
+    {
+        $uploadPath = Yii::getAlias('@webroot/uploads/covers/');
+
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $fileName = uniqid() . '.' . $file->extension;
+        $filePath = $uploadPath . $fileName;
+
+        if ($file->saveAs($filePath)) {
+            return 'uploads/covers/' . $fileName;
+        }
+
+        throw new \RuntimeException('Не удалось сохранить файл обложки.');
+    }
+
     public function updateBook(int $id, BookDto $dto): Book
     {
         $book = $this->getBookById($id) ?? throw new \RuntimeException("Книга с ID {$id} не найдена");
@@ -67,6 +90,10 @@ class BookService extends \yii\base\Component
         $book->description = $dto->description ? trim($dto->description) : null;
         $book->isbn = $dto->isbn ? trim($dto->isbn) : null;
         $book->cover_image = $dto->cover_image ? trim($dto->cover_image) : null;
+
+        if ($dto->coverImageFile) {
+            $book->cover_image = $this->uploadCoverImage($dto->coverImageFile);
+        }
 
         if (!$book->validate()) {
             throw new \InvalidArgumentException('Некорректные данные книги: ' . implode(', ', $book->getErrorSummary(true)));

@@ -25,6 +25,9 @@ $this->title = 'Каталог книг';
                         <?php if ($book->isbn): ?>
                             - ISBN: <?php echo Html::encode($book->isbn); ?>
                         <?php endif; ?>
+                        <?php if ($book->cover_image): ?>
+                            <br><img src="<?php echo Html::encode(\yii\helpers\Url::to('@web/' . $book->cover_image)); ?>" alt="Обложка" style="max-width: 100px; max-height: 150px;">
+                        <?php endif; ?>
                         <?php if ($book->description): ?>
                             <br><em><?php echo Html::encode($book->description); ?></em>
                         <?php endif; ?>

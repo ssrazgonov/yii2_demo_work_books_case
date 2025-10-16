@@ -7,7 +7,7 @@ use yii\widgets\ActiveForm;
 
 <div class="book-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]); ?>
 
     <?= $form->field($model, 'title')->textInput(['maxlength' => true]) ?>
 
@@ -17,12 +17,9 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'isbn')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'cover_image')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'coverImageFile')->fileInput() ?>
 
-    <div class="form-group">
-        <label>Авторы</label>
-        <?= Html::checkboxList('Book[authorIds]', $selectedAuthors, $authors) ?>
-    </div>
+    <?= $form->field($model, 'authorIds')->checkboxList($authors) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить', ['class' => 'btn btn-success']) ?>

@@ -13,7 +13,11 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN useradd -u 1000 appuser && mkdir -p /var/www/html && chown -R 1000:1000 /var/www/html
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data \
+    && mkdir -p /var/www/html && chown -R www-data:www-data /var/www/html \
+    && mkdir -p /var/www/html/web/uploads/covers \
+    && chown -R www-data:www-data /var/www/html/web/uploads \
+    && chmod -R 755 /var/www/html/web/uploads
 
 WORKDIR /var/www/html
 

@@ -4,7 +4,7 @@ use yii\helpers\Html;
 
 $this->title = 'Редактировать книгу: ' . $model->title;
 $this->params['breadcrumbs'][] = ['label' => 'Книги', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->title, 'url' => ['view', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = ['label' => $model->title, 'url' => ['view', 'id' => $id]];
 $this->params['breadcrumbs'][] = 'Редактировать';
 ?>
 <div class="book-update">
@@ -14,7 +14,6 @@ $this->params['breadcrumbs'][] = 'Редактировать';
     <?= $this->render('_form', [
         'model' => $model,
         'authors' => $authors,
-        'selectedAuthors' => $selectedAuthors,
     ]) ?>
 
 </div>

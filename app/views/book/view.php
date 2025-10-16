@@ -23,6 +23,13 @@ $this->params['breadcrumbs'][] = $this->title;
         ]) ?>
     </p>
 
+    <?php if ($model->cover_image): ?>
+        <div style="margin-bottom: 20px;">
+            <h3>Обложка книги:</h3>
+            <img src="<?= Html::encode(\yii\helpers\Url::to('@web/' . $model->cover_image)) ?>" alt="Обложка книги" style="max-width: 300px; max-height: 400px;">
+        </div>
+    <?php endif; ?>
+
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [

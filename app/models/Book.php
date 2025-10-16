@@ -5,6 +5,7 @@ namespace app\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\web\UploadedFile;
 
 class Book extends ActiveRecord
 {
@@ -22,7 +23,6 @@ class Book extends ActiveRecord
             [['title'], 'string', 'max' => 255],
             [['isbn'], 'string', 'max' => 13],
             [['cover_image'], 'string', 'max' => 255],
-            [['isbn'], 'unique'],
         ];
     }
 

@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\dto\AuthorDto;
 use app\models\Author;
+use app\models\AuthorForm;
 use app\services\AuthorService;
 use Yii;
 use yii\filters\AccessControl;
@@ -12,7 +13,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-class AuthorController extends Controller
+class AuthorController extends BaseController
 {
     public function __construct(
         $id,
@@ -73,25 +74,40 @@ class AuthorController extends Controller
 
     public function actionCreate(): Response|string
     {
+        $model = new AuthorForm();
+
         return $this->handlePostRequest(
-            fn() => $this->authorService->createAuthor(
-                new AuthorDto(Yii::$app->request->post('Author', [])['name'] ?? '')
-            ),
+            function () use ($model) {
+                if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                    return $this->authorService->createAuthor(
+                        new AuthorDto($model->name)
+                    );
+                }
+                return null;
+            },
             'Автор успешно создан.',
             'Ошибка при сохранении автора.',
             ['view', 'id' => '__MODEL_ID__']
-        ) ?? $this->render('create', ['model' => new Author()]);
+        ) ?? $this->render('create', ['model' => $model]);
     }
 
     public function actionUpdate(int $id): Response|string
     {
-        $model = $this->findModel($id);
+        $author = $this->findModel($id);
+        $model = new AuthorForm();
+        $model->loadAuthor($author);
+        $model->setAuthorId($id);
 
         return $this->handlePostRequest(
-            fn() => $this->authorService->updateAuthor(
-                $id,
-                new AuthorDto(Yii::$app->request->post('Author', [])['name'] ?? '')
-            ),
+            function () use ($model, $id) {
+                if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                    return $this->authorService->updateAuthor(
+                        $id,
+                        new AuthorDto($model->name)
+                    );
+                }
+                return null;
+            },
             'Автор успешно обновлен.',
             'Ошибка при обновлении автора.',
             ['view', 'id' => '__MODEL_ID__']
@@ -119,24 +135,4 @@ class AuthorController extends Controller
             ?? throw new NotFoundHttpException('Автор не найден.');
     }
 
-    protected function handlePostRequest(callable $action, string $successMessage, string $errorMessage, array $redirectRoute): ?Response
-    {
-        if (!Yii::$app->request->isPost) {
-            return null;
-        }
-
-        try {
-            $model = $action();
-            Yii::$app->session->setFlash('success', $successMessage);
-            $redirectRoute = str_replace('__MODEL_ID__', (string)$model->id, $redirectRoute);
-            return $this->redirect($redirectRoute);
-        } catch (\InvalidArgumentException $e) {
-            Yii::$app->session->setFlash('error', $e->getMessage());
-        } catch (\RuntimeException $e) {
-            Yii::$app->session->setFlash('error', $errorMessage);
-            Yii::error($e->getMessage(), __METHOD__);
-        }
-
-        return null;
-    }
 }

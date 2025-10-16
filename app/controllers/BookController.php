@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\dto\BookDto;
 use app\models\Book;
+use app\models\BookForm;
 use app\services\BookService;
 use Yii;
 use yii\filters\AccessControl;
@@ -12,8 +13,9 @@ use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\UploadedFile;
 
-class BookController extends Controller
+class BookController extends BaseController
 {
     public function __construct(
         $id,
@@ -74,43 +76,58 @@ class BookController extends Controller
 
     public function actionCreate(): Response|string
     {
+        $model = new BookForm();
+
         return $this->handlePostRequest(
-            function () {
-                $postData = Yii::$app->request->post('Book', []);
-                return $this->bookService->createBook(new BookDto(
-                    title: $postData['title'] ?? '',
-                    year: (int)($postData['year'] ?? 0),
-                    description: $postData['description'] ?? null,
-                    isbn: $postData['isbn'] ?? null,
-                    cover_image: $postData['cover_image'] ?? null,
-                    authorIds: $postData['authorIds'] ?? []
-                ));
+            function () use ($model) {
+                if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                    $coverImage = UploadedFile::getInstance($model, 'coverImageFile');
+
+                    return $this->bookService->createBook(new BookDto(
+                        title: $model->title,
+                        year: $model->year,
+                        description: $model->description,
+                        isbn: $model->isbn,
+                        cover_image: $model->cover_image,
+                        authorIds: is_array($model->authorIds) ? $model->authorIds : [],
+                        coverImageFile: $coverImage
+                    ));
+                }
+                return null;
             },
             'Книга успешно создана.',
             'Ошибка при сохранении книги.',
             ['view', 'id' => '__MODEL_ID__']
         ) ?? $this->render('create', [
-            'model' => new Book(),
+            'model' => $model,
             'authors' => $this->bookService->getAuthorsList(),
-            'selectedAuthors' => [],
         ]);
     }
 
     public function actionUpdate(int $id): Response|string
     {
-        $model = $this->findModel($id);
+        $book = $this->findModel($id);
+        $model = new BookForm();
+        $model->loadBook($book);
+        $model->setBookId($id);
 
         return $this->handlePostRequest(
-            function () use ($id) {
-                $postData = Yii::$app->request->post('Book', []);
-                return $this->bookService->updateBook($id, new BookDto(
-                    title: $postData['title'] ?? '',
-                    year: (int)($postData['year'] ?? 0),
-                    description: $postData['description'] ?? null,
-                    isbn: $postData['isbn'] ?? null,
-                    cover_image: $postData['cover_image'] ?? null,
-                    authorIds: $postData['authorIds'] ?? []
-                ));
+            function () use ($model, $id) {
+                $model->setBookId($id); // Ensure bookId is set before validation
+                if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                    $coverImage = UploadedFile::getInstance($model, 'coverImageFile');
+
+                    return $this->bookService->updateBook($id, new BookDto(
+                        title: $model->title,
+                        year: $model->year,
+                        description: $model->description,
+                        isbn: $model->isbn,
+                        cover_image: $model->cover_image,
+                        authorIds: is_array($model->authorIds) ? $model->authorIds : [],
+                        coverImageFile: $coverImage
+                    ));
+                }
+                return null;
             },
             'Книга успешно обновлена.',
             'Ошибка при обновлении книги.',
@@ -118,7 +135,7 @@ class BookController extends Controller
         ) ?? $this->render('update', [
             'model' => $model,
             'authors' => $this->bookService->getAuthorsList(),
-            'selectedAuthors' => ArrayHelper::getColumn($model->bookAuthors, 'author_id'),
+            'id' => $id,
         ]);
     }
 
@@ -143,24 +160,5 @@ class BookController extends Controller
             ?? throw new NotFoundHttpException('Книга не найдена.');
     }
 
-    protected function handlePostRequest(callable $action, string $successMessage, string $errorMessage, array $redirectRoute): ?Response
-    {
-        if (!Yii::$app->request->isPost) {
-            return null;
-        }
 
-        try {
-            $model = $action();
-            Yii::$app->session->setFlash('success', $successMessage);
-            $redirectRoute = str_replace('__MODEL_ID__', (string)$model->id, $redirectRoute);
-            return $this->redirect($redirectRoute);
-        } catch (\InvalidArgumentException $e) {
-            Yii::$app->session->setFlash('error', $e->getMessage());
-        } catch (\RuntimeException $e) {
-            Yii::$app->session->setFlash('error', $errorMessage);
-            Yii::error($e->getMessage(), __METHOD__);
-        }
-
-        return null;
-    }
 }

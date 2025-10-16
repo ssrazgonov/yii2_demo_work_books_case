@@ -11,5 +11,6 @@ readonly class BookDto
         public ?string $isbn,
         public ?string $cover_image,
         public array $authorIds = [],
+        public ?\yii\web\UploadedFile $coverImageFile = null,
     ) {}
 }
