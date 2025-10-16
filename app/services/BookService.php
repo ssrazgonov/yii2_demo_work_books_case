@@ -14,6 +14,7 @@ use yii\web\UploadedFile;
 
 class BookService extends \yii\base\Component
 {
+    const string SERVICE_NAME = 'bookService';
     const EVENT_BOOK_CREATED = 'bookCreated';
 
     public function getAllBooks(): ActiveDataProvider

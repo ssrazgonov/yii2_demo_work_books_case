@@ -13,7 +13,7 @@ class BookForm extends Model
     public ?string $description = null;
     public ?string $isbn = null;
     public ?string $cover_image = null;
-    public array $authorIds = [];
+    public $authorIds = [];
 
     public string $coverImageFile = '';
 
@@ -35,6 +35,7 @@ class BookForm extends Model
                 return $query;
             }],
             [['cover_image'], 'string', 'max' => 255],
+            [['authorIds'], 'required'],
             [['authorIds'], 'each', 'rule' => ['integer']],
             [['authorIds'], 'validateAuthors'],
             [['coverImageFile'], 'file', 'extensions' => 'png, jpg, jpeg, gif', 'maxSize' => 5 * 1024 * 1024, 'skipOnEmpty' => true],

@@ -17,13 +17,20 @@ use yii\web\UploadedFile;
 
 class BookController extends BaseController
 {
+    private BookService $bookService;
+
     public function __construct(
         $id,
         $module,
-        private BookService $bookService,
         array $config = []
     ) {
         parent::__construct($id, $module, $config);
+    }
+
+    public function init()
+    {
+        $this->bookService = Yii::$app->get(BookService::SERVICE_NAME);
+        parent::init();
     }
 
     public function behaviors(): array
